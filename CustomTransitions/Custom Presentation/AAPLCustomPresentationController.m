@@ -14,7 +14,9 @@
 #define CORNER_RADIUS   16.f
 
 @interface AAPLCustomPresentationController () <UIViewControllerAnimatedTransitioning>
+//背景视图
 @property (nonatomic, strong) UIView *dimmingView;
+//真正的视图控制器的主视图
 @property (nonatomic, strong) UIView *presentationWrappingView;
 @end
 
@@ -51,6 +53,9 @@
 //  the containerView has been created and the view hierarchy set up for the
 //  presentation.  However, the -presentedView has not yet been retrieved.
 //
+//  present动画将要开始
+
+#define useOne 0
 - (void)presentationTransitionWillBegin
 {
     // The default implementation of -presentedView returns
@@ -72,18 +77,25 @@
         presentationWrapperView.layer.shadowOpacity = 0.44f;
         presentationWrapperView.layer.shadowRadius = 13.f;
         presentationWrapperView.layer.shadowOffset = CGSizeMake(0, -6.f);
-        self.presentationWrappingView = presentationWrapperView;
+        presentationWrapperView.backgroundColor = [UIColor clearColor];
         
+        self.presentationWrappingView = presentationWrapperView;
+        NSLog(@"presentationWrapperView.frame = %@", NSStringFromCGRect(presentedViewControllerView.frame));
+     
+        //添加圆角,阴影,用两个视图来搞定了..本来只想用一个视图搞定,但是图层的path只能用layer.mask来替换掉,然后阴影效果又不能叠加,所以还是用两个视图来搞定,一个用来显示阴影效果,另外一个用来设置边框的路径
+#if useOne
         // presentationRoundedCornerView is CORNER_RADIUS points taller than the
         // height of the presented view controller's view.  This is because
         // the cornerRadius is applied to all corners of the view.  Since the
         // effect calls for only the top two corners to be rounded we size
         // the view such that the bottom CORNER_RADIUS points lie below
         // the bottom edge of the screen.
+        // 阴影底部视图
         UIView *presentationRoundedCornerView = [[UIView alloc] initWithFrame:UIEdgeInsetsInsetRect(presentationWrapperView.bounds, UIEdgeInsetsMake(0, 0, -CORNER_RADIUS, 0))];
         presentationRoundedCornerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         presentationRoundedCornerView.layer.cornerRadius = CORNER_RADIUS;
         presentationRoundedCornerView.layer.masksToBounds = YES;
+        NSLog(@"presentationRoundedCornerView.frame = %@", NSStringFromCGRect(presentationRoundedCornerView.frame));
         
         // To undo the extra height added to presentationRoundedCornerView,
         // presentedViewControllerWrapperView is inset by CORNER_RADIUS points.
@@ -91,17 +103,32 @@
         // bounds to the size of -frameOfPresentedViewInContainerView.
         UIView *presentedViewControllerWrapperView = [[UIView alloc] initWithFrame:UIEdgeInsetsInsetRect(presentationRoundedCornerView.bounds, UIEdgeInsetsMake(0, 0, CORNER_RADIUS, 0))];
         presentedViewControllerWrapperView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        NSLog(@"presentedViewControllerWrapperView.frame = %@", NSStringFromCGRect(presentedViewControllerWrapperView.frame));
         
         // Add presentedViewControllerView -> presentedViewControllerWrapperView.
         presentedViewControllerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         presentedViewControllerView.frame = presentedViewControllerWrapperView.bounds;
         [presentedViewControllerWrapperView addSubview:presentedViewControllerView];
+        NSLog(@"presentedViewControllerView.frame = %@", NSStringFromCGRect(presentedViewControllerView.frame));
         
         // Add presentedViewControllerWrapperView -> presentationRoundedCornerView.
         [presentationRoundedCornerView addSubview:presentedViewControllerWrapperView];
         
         // Add presentationRoundedCornerView -> presentationWrapperView.
         [presentationWrapperView addSubview:presentationRoundedCornerView];
+#else
+        presentedViewControllerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        presentedViewControllerView.frame = presentationWrapperView.bounds;
+
+        //边框效果
+        CALayer *backLayer = presentedViewControllerView.layer;
+        CAShapeLayer *layer = [CAShapeLayer layer];
+        UIBezierPath *path = [UIBezierPath bezierPathWithRoundedRect:presentedViewControllerView.bounds byRoundingCorners:UIRectCornerTopRight|UIRectCornerTopLeft cornerRadii:(CGSize){CORNER_RADIUS, CORNER_RADIUS}];
+        layer.path = path.CGPath;
+        backLayer.mask = layer;
+        
+        [presentationWrapperView addSubview:presentedViewControllerView];
+#endif
     }
     
     // Add a dimming view behind presentationWrapperView.  self.presentedView
@@ -217,6 +244,7 @@
 
 
 //| ----------------------------------------------------------------------------
+//  返回presentedView在containerView中的位置,在本视图为贴底部的一部分区域
 - (CGRect)frameOfPresentedViewInContainerView
 {
     CGRect containerViewBounds = self.containerView.bounds;
