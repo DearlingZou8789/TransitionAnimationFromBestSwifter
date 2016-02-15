@@ -12,6 +12,7 @@
 @end
 
 
+#define corner 13.0f
 @implementation AAPLAdaptivePresentationController
 
 //| ----------------------------------------------------------------------------
@@ -66,6 +67,7 @@
         presentedViewControllerView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         //presentedViewControllerView.layer.borderColor = [UIColor grayColor].CGColor;
         //presentedViewControllerView.layer.borderWidth = 2.f;
+        presentedViewControllerView.layer.cornerRadius = corner;
         [presentationWrapperView addSubview:presentedViewControllerView];
         
         // Create the dismiss button.
@@ -132,7 +134,8 @@
 - (CGSize)sizeForChildContentContainer:(id<UIContentContainer>)container withParentContainerSize:(CGSize)parentSize
 {
     if (container == self.presentedViewController)
-        return CGSizeMake(parentSize.width/2, parentSize.height/2);
+//        return CGSizeMake(parentSize.width/2, parentSize.height/2);
+        return parentSize;
     else
         return [super sizeForChildContentContainer:container withParentContainerSize:parentSize];
 }
@@ -142,29 +145,40 @@
 - (CGRect)frameOfPresentedViewInContainerView
 {
     CGRect containerViewBounds = self.containerView.bounds;
-    CGSize presentedViewContentSize = [self sizeForChildContentContainer:self.presentedViewController withParentContainerSize:containerViewBounds.size];
+//    CGSize presentedViewContentSize = [self sizeForChildContentContainer:self.presentedViewController withParentContainerSize:containerViewBounds.size];
     
     // Center the presentationWrappingView view within the container.
-    CGRect frame = CGRectMake(CGRectGetMidX(containerViewBounds) - presentedViewContentSize.width/2,
-                              CGRectGetMidY(containerViewBounds) - presentedViewContentSize.height/2,
-                              presentedViewContentSize.width, presentedViewContentSize.height);
+    
+//    CGRect frame = CGRectMake(CGRectGetMidX(containerViewBounds) - presentedViewContentSize.width/2,
+//                              CGRectGetMidY(containerViewBounds) - presentedViewContentSize.height/2,
+//                              presentedViewContentSize.width, presentedViewContentSize.height);
+    CGRect frame = CGRectInset(containerViewBounds, CGRectGetWidth(containerViewBounds) / 8, CGRectGetHeight(containerViewBounds) / 8);
     
     // Outset the centered frame of presentationWrappingView so that the
     // dismiss button is within the bounds of presentationWrappingView.
     return CGRectInset(frame, -20, -20);
 }
 
+//最后视图的尺寸
+- (CGRect)toViewFinalFrame {
+    CGSize containerViewBounds = self.containerView.bounds.size;
+    CGSize presentedViewContentSize = CGSizeMake(containerViewBounds.width / 2.0, containerViewBounds.height / 2.0);
+    CGRect frame = CGRectMake(containerViewBounds.width / 2.0 - presentedViewContentSize.width / 2.0, containerViewBounds.height / 2.0 - presentedViewContentSize.height / 2.0, presentedViewContentSize.width, presentedViewContentSize.height);
+    return frame;
+}
 
 //| ----------------------------------------------------------------------------
 //  This method is similar to the -viewWillLayoutSubviews method in
 //  UIViewController.  It allows the presentation controller to alter the
 //  layout of any custom views it manages.
 //
+//  动画完成之后的重新布局子视图,一定要重绘,不然子视图没有变化,不过如果有约束的话,在这里就写上setNeedsLayout重新布局
 - (void)containerViewWillLayoutSubviews
 {
     [super containerViewWillLayoutSubviews];
     
-    self.presentationWrappingView.frame = self.frameOfPresentedViewInContainerView;
+//    self.presentationWrappingView.frame = self.frameOfPresentedViewInContainerView;
+    self.presentationWrappingView.frame = [self toViewFinalFrame];
     
     // Undo the outset that was applied in -frameOfPresentedViewInContainerView.
     self.presentedViewController.view.frame = CGRectInset(self.presentationWrappingView.bounds, 20, 20);
@@ -209,6 +223,8 @@
     // presenting view controller's view was not removed).
     [containerView addSubview:toView];
     
+    CGRect toViewFinalFrame = [self toViewFinalFrame];
+
     if (isPresenting) {
         toView.alpha = 0.f;
         
@@ -226,10 +242,13 @@
     
     NSTimeInterval transitionDuration = [self transitionDuration:transitionContext];
     
+#if 0
+    //普通动画
     [UIView animateWithDuration:transitionDuration animations:^{
-        if (isPresenting)
+        if (isPresenting){
             toView.alpha = 1.f;
-        else
+            toView.frame = toViewFinalFrame;
+        }else
             fromView.alpha = 0.f;
         
     } completion:^(BOOL finished) {
@@ -244,6 +263,38 @@
         if (isPresenting == NO)
             fromView.alpha = 1.f;
     }];
+#else
+    if (isPresenting) {
+        //加入弹动效果动画,效果还是很明显的
+        [UIView animateWithDuration:transitionDuration delay:.0 usingSpringWithDamping:0.4 initialSpringVelocity:10 options:UIViewAnimationOptionTransitionCrossDissolve animations:^{
+            if (isPresenting){
+                toView.alpha = 1.f;
+                toView.frame = toViewFinalFrame;
+            }else
+                fromView.alpha = 0.f;
+        } completion:^(BOOL finished) {
+            // When we complete, tell the transition context
+            // passing along the BOOL that indicates whether the transition
+            // finished or not.
+            BOOL wasCancelled = [transitionContext transitionWasCancelled];
+            [transitionContext completeTransition:!wasCancelled];
+            
+            // Reset the alpha of the dismissed view, in case it will be used
+            // elsewhere in the app.
+            if (isPresenting == NO)
+                fromView.alpha = 1.f;
+        }];
+    }else{
+        CGRect frame = self.frameOfPresentedViewInContainerView;
+        [UIView animateWithDuration:transitionDuration animations:^{
+            fromView.frame = frame;
+            fromView.alpha = 0.f;
+        } completion:^(BOOL finished) {
+            BOOL wasCancelled = [transitionContext transitionWasCancelled];
+            [transitionContext completeTransition:!wasCancelled];
+        }];
+    }
+#endif
 }
 
 #pragma mark -

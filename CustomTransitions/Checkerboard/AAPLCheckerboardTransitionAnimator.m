@@ -74,6 +74,7 @@
     __block UIImage *toViewSnapshot;
     
     // Snapshot the fromView.
+    // 截取fromView转换成UIImage对象
     UIGraphicsBeginImageContextWithOptions(containerView.bounds.size, YES, containerView.window.screen.scale);
     [fromView drawViewHierarchyInRect:containerView.bounds afterScreenUpdates:NO];
     fromViewSnapshot = UIGraphicsGetImageFromCurrentImageContext();
@@ -81,6 +82,7 @@
     
     // To avoid a blank snapshot, defer snapshotting the incoming view until it
     // has had a chance to perform layout and drawing (1 run-loop cycle).
+    // 为了避免一个空白照,先将toView转换成UIImage
     dispatch_async(dispatch_get_main_queue(), ^{
         UIGraphicsBeginImageContextWithOptions(containerView.bounds.size, YES, containerView.window.screen.scale);
         [toView drawViewHierarchyInRect:containerView.bounds afterScreenUpdates:NO];
@@ -94,6 +96,7 @@
     [containerView addSubview:transitionContainer];
     
     // Apply a perpective transform to the sublayers of transitionContainer.
+    // 透视效果
     CATransform3D t = CATransform3DIdentity;
     t.m34 = 1.0 / -900.0;
     transitionContainer.layer.sublayerTransform = t;

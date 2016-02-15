@@ -207,12 +207,14 @@
 
 #pragma mark -
 #pragma mark Layout
+//UIPresentationController实现了UIContentContainer协议,适用于视图变化时该调用的API
 
 //| ----------------------------------------------------------------------------
 //  This method is invoked whenever the presentedViewController's
 //  preferredContentSize property changes.  It is also invoked just before the
 //  presentation transition begins (prior to -presentationTransitionWillBegin).
 //
+//  如果presentedViewController的preferredContentSize改变了就重新布局
 - (void)preferredContentSizeDidChangeForChildContentContainer:(id<UIContentContainer>)container
 {
     [super preferredContentSizeDidChangeForChildContentContainer:container];
@@ -234,6 +236,7 @@
 //  of the presented view controller's view to match this promised size.
 //  We do this in -containerViewWillLayoutSubviews.
 //
+//  当presentation Controller收到-viewWillTransitionToSize:withTransitionCoordinator:消息时,调用该方法返回一个新的尺寸
 - (CGSize)sizeForChildContentContainer:(id<UIContentContainer>)container withParentContainerSize:(CGSize)parentSize
 {
     if (container == self.presentedViewController)
@@ -264,6 +267,7 @@
 //  UIViewController.  It allows the presentation controller to alter the
 //  layout of any custom views it manages.
 //
+//  当containerView需要重新绘制子视图时调用
 - (void)containerViewWillLayoutSubviews
 {
     [super containerViewWillLayoutSubviews];
@@ -331,6 +335,8 @@
     // changes, but the original owner of the presenting view controller does.
     UIView *fromView = [transitionContext viewForKey:UITransitionContextFromViewKey];
     
+    //A present B, B的presentingViewController为A, A的presentedViewController为B
+    //所以需要设置transitionDelegate的是B,也就是A的presentedViewController对象
     BOOL isPresenting = (fromViewController == self.presentingViewController);
     
     // This will be the current frame of fromViewController.view.
@@ -350,6 +356,7 @@
     [containerView addSubview:toView];
     
     if (isPresenting) {
+        //如果是presenting,就将视图从底部推出,这样需要先将视图挪到[UIScreen mainScreen]的底部
         toViewInitialFrame.origin = CGPointMake(CGRectGetMinX(containerView.bounds), CGRectGetMaxY(containerView.bounds));
         toViewInitialFrame.size = toViewFinalFrame.size;
         toView.frame = toViewInitialFrame;
