@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "D8EDB2117A822F20410002F491E5388EA5731598",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "D8EDB2117A822F20410002F491E5388EA5731598" : 0,
+    "054FA612D81390BCA914FF3E911AFB6ED941DB7C" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "9C945F7F-4669-4C0D-B4EC-A79CBC1A1FB8",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "D8EDB2117A822F20410002F491E5388EA5731598" : "CustomTransition-OC\/",
+    "054FA612D81390BCA914FF3E911AFB6ED941DB7C" : ".."
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "CustomTransitions",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "CustomTransitions.xcodeproj",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/bestswifter\/MySampleCode",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "054FA612D81390BCA914FF3E911AFB6ED941DB7C"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/DearlingZou8789\/TransitionAnimationFromBestSwifter.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D8EDB2117A822F20410002F491E5388EA5731598"
+    }
+  ]
+}
