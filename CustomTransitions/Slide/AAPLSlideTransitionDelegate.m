@@ -95,10 +95,12 @@ const char * AAPLSlideTabBarControllerDelegateAssociationKey = "AAPLSlideTabBarC
 {
     CGPoint translation = [sender translationInView:self.tabBarController.view];
     
+    //translation.x > 0.f往右走,改变self.tabBarController.selectedIndex--,减去
     if (translation.x > 0.f && self.tabBarController.selectedIndex > 0) {
         // Panning right, transition to the left view controller.
         self.tabBarController.selectedIndex--;
     } else if (translation.x < 0.f && self.tabBarController.selectedIndex + 1 < self.tabBarController.viewControllers.count) {
+        //translation.x < 0.f往左走,改变self.tabBarController.selectedIndex++,加上
         // Panning left, transition to the right view controller.
         self.tabBarController.selectedIndex++;
     } else {

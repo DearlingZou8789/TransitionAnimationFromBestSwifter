@@ -8,6 +8,8 @@
 
 @import UIKit;
 
+//UIPercentDrivenInteractiveTransition实现了UIViewControllerInteractiveTransitioning代理方法
+//可以用来返回给UITabBarViewController的代理对象.
 @interface AAPLSlideTransitionInteractionController : UIPercentDrivenInteractiveTransition
 
 - (instancetype)initWithGestureRecognizer:(UIPanGestureRecognizer *)gestureRecognizer NS_DESIGNATED_INITIALIZER;

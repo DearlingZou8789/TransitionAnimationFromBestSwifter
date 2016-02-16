@@ -11,7 +11,9 @@
 @interface AAPLSlideTransitionInteractionController ()
 @property (nonatomic, weak) id<UIViewControllerContextTransitioning> transitionContext;
 @property (nonatomic, strong, readonly) UIPanGestureRecognizer *gestureRecognizer;
+//接触时的点位
 @property (nonatomic, readwrite) CGPoint initialLocationInContainerView;
+//接触时的偏移位置
 @property (nonatomic, readwrite) CGPoint initialTranslationInContainerView;
 @end
 
@@ -70,6 +72,7 @@
 {
     UIView *transitionContainerView = self.transitionContext.containerView;
     
+    //translationInView返回手势在指定视图中的偏移,用后面一个位置减去前面一个位置
     CGPoint translationInContainerView = [gesture translationInView:transitionContainerView];
     
     // If the direction of the current touch along the horizontal axis does not
@@ -117,6 +120,7 @@
         case UIGestureRecognizerStateEnded:
             // Dragging has finished.
             // Complete or cancel, depending on how far we've dragged.
+            // 拖了40%以上就完成拖拽动画
             if ([self percentForGesture:gestureRecognizer] >= 0.4f)
                 [self finishInteractiveTransition];
             else

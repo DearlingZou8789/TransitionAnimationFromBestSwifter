@@ -96,7 +96,7 @@
     [containerView addSubview:transitionContainer];
     
     // Apply a perpective transform to the sublayers of transitionContainer.
-    // 透视效果
+    // 透视效果,设置子视图的透视效果,只在旋转的时候才能体现作用
     CATransform3D t = CATransform3DIdentity;
     t.m34 = 1.0 / -900.0;
     transitionContainer.layer.sublayerTransform = t;
@@ -124,6 +124,7 @@
     CGFloat transitionVectorLength = sqrtf( transitionVector.dx * transitionVector.dx + transitionVector.dy * transitionVector.dy );
     CGVector transitionUnitVector = CGVectorMake(transitionVector.dx / transitionVectorLength, transitionVector.dy / transitionVectorLength);
     
+    //  分割fromViewSnapshot和toViewSnapshot
     for (NSUInteger y = 0 ; y < verticalSlices; y++)
     {
         for (NSUInteger x = 0; x < horizontalSlices; x++)
@@ -134,7 +135,8 @@
             fromContentLayer.contents = (__bridge id)fromViewSnapshot.CGImage;
             
             CALayer *toContentLayer = [CALayer new];
-            toContentLayer.frame = CGRectMake(x * sliceSize * -1.f, y * sliceSize * -1.f, containerView.bounds.size.width, containerView.bounds.size.height);
+//            toContentLayer.frame = CGRectMake(x * sliceSize * -1.f, y * sliceSize * -1.f, containerView.bounds.size.width, containerView.bounds.size.height);
+            toContentLayer.frame = fromContentLayer.frame;
             
             // Snapshotting the toView was deferred so we must also defer applying
             // the snapshot to the layer's contents.
@@ -149,6 +151,7 @@
                 [CATransaction setDisableActions:wereActiondDisabled];
             });
             
+            //toCheckboardSquareView返回180度
             UIView *toCheckboardSquareView = [UIView new];
             toCheckboardSquareView.frame = CGRectMake(x * sliceSize, y * sliceSize, sliceSize, sliceSize);
             toCheckboardSquareView.opaque = NO;
@@ -157,6 +160,7 @@
             toCheckboardSquareView.layer.transform = CATransform3DMakeRotation(M_PI, 0, 1, 0);
             [toCheckboardSquareView.layer addSublayer:toContentLayer];
             
+            //fromCheckboardSquareView保持正面
             UIView *fromCheckboardSquareView = [UIView new];
             fromCheckboardSquareView.frame = CGRectMake(x * sliceSize, y * sliceSize, sliceSize, sliceSize);
             fromCheckboardSquareView.opaque = NO;
@@ -208,6 +212,7 @@
             sliceAnimationsPending++;
             
             [UIView animateWithDuration:duration delay:startTime options:0 animations:^{
+                //图层翻转,toCheckboardSquareView从原来的180°翻转成默认的,fromCheckboardSquareView从原来默认翻转180°
                 toCheckboardSquareView.layer.transform = CATransform3DIdentity;
                 fromCheckboardSquareView.layer.transform = CATransform3DMakeRotation(M_PI, 0, 1, 0);
             } completion:^(BOOL finished) {
